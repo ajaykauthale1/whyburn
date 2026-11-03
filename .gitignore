@@ -1,8 +1,12 @@
+# private planning (local only)
 PLAN.md
+TASKS.md
 
 # dependencies & build
 node_modules/
 dist/
+coverage/
+*.tsbuildinfo
 *.log
 .env
 .DS_Store
