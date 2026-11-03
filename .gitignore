@@ -1,0 +1,8 @@
+PLAN.md
+
+# dependencies & build
+node_modules/
+dist/
+*.log
+.env
+.DS_Store
