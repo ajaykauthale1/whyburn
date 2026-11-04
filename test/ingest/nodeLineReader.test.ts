@@ -51,9 +51,9 @@ describe("NodeLineReader + ClaudeCodeReader (integration)", () => {
 
   it("attaches durationMs to turns from system/turn_duration lines", async () => {
     const r = await reader.read(FIXTURE, lineReader);
-    expect(r.session.turns[0].durationMs).toBe(4823);
-    expect(r.session.turns[1].durationMs).toBe(7540);
-    expect(r.session.turns[2].durationMs).toBe(3100);
+    expect(r.session.turns[0]!.durationMs).toBe(4823);
+    expect(r.session.turns[1]!.durationMs).toBe(7540);
+    expect(r.session.turns[2]!.durationMs).toBe(3100);
   });
 
   it("reads costUsd from cost-state line", async () => {
@@ -63,15 +63,15 @@ describe("NodeLineReader + ClaudeCodeReader (integration)", () => {
 
   it("detects MCP tool call in turn 3", async () => {
     const r = await reader.read(FIXTURE, lineReader);
-    const turn3 = r.session.turns[2];
+    const turn3 = r.session.turns[2]!;
     expect(turn3.toolCalls).toHaveLength(1);
-    expect(turn3.toolCalls[0].mcpServer).toBe("github");
-    expect(turn3.toolCalls[0].toolLocalName).toBe("search_code");
+    expect(turn3.toolCalls[0]!.mcpServer).toBe("github");
+    expect(turn3.toolCalls[0]!.toolLocalName).toBe("search_code");
   });
 
   it("detects non-MCP tool call (Bash) in turn 2", async () => {
     const r = await reader.read(FIXTURE, lineReader);
-    const turn2 = r.session.turns[1];
+    const turn2 = r.session.turns[1]!;
     const bash = turn2.toolCalls.find((tc) => tc.toolName === "Bash");
     expect(bash?.mcpServer).toBeNull();
   });

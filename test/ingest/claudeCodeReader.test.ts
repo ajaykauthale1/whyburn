@@ -111,7 +111,7 @@ describe("ClaudeCodeReader", () => {
   it("parses a single assistant turn", async () => {
     const r = await reader.read("any.jsonl", mockReader([USER_LINE, ASST_TEXT]));
     expect(r.session.turns).toHaveLength(1);
-    const t = r.session.turns[0];
+    const t = r.session.turns[0]!;
     expect(t.id).toBe("asst-001");
     expect(t.model).toBe("claude-sonnet-5-5");
     expect(t.index).toBe(0);
@@ -119,7 +119,7 @@ describe("ClaudeCodeReader", () => {
 
   it("maps token usage correctly", async () => {
     const r = await reader.read("any.jsonl", mockReader([ASST_TEXT]));
-    const t = r.session.turns[0];
+    const t = r.session.turns[0]!;
     expect(t.usage.inputTokens).toBe(500);
     expect(t.usage.outputTokens).toBe(120);
     expect(t.usage.cacheReadTokens).toBe(200);
@@ -128,12 +128,12 @@ describe("ClaudeCodeReader", () => {
 
   it("attaches durationMs from the following system/turn_duration line", async () => {
     const r = await reader.read("any.jsonl", mockReader([ASST_TEXT, SYS_DURATION]));
-    expect(r.session.turns[0].durationMs).toBe(4800);
+    expect(r.session.turns[0]!.durationMs).toBe(4800);
   });
 
   it("leaves durationMs null when no system/turn_duration follows", async () => {
     const r = await reader.read("any.jsonl", mockReader([ASST_TEXT]));
-    expect(r.session.turns[0].durationMs).toBeNull();
+    expect(r.session.turns[0]!.durationMs).toBeNull();
   });
 
   it("accumulates usage across multiple turns", async () => {
@@ -144,8 +144,8 @@ describe("ClaudeCodeReader", () => {
 
   it("sets turn index incrementally", async () => {
     const r = await reader.read("any.jsonl", mockReader([ASST_TEXT, ASST_TOOLS]));
-    expect(r.session.turns[0].index).toBe(0);
-    expect(r.session.turns[1].index).toBe(1);
+    expect(r.session.turns[0]!.index).toBe(0);
+    expect(r.session.turns[1]!.index).toBe(1);
   });
 
   it("deduplates models across turns", async () => {
@@ -160,15 +160,15 @@ describe("ClaudeCodeReader", () => {
 
   it("parses MCP tool calls and sets mcpServer", async () => {
     const r = await reader.read("any.jsonl", mockReader([ASST_TOOLS]));
-    const tcs = r.session.turns[0].toolCalls;
+    const tcs = r.session.turns[0]!.toolCalls;
     expect(tcs).toHaveLength(2);
-    expect(tcs[0].mcpServer).toBe("github");
-    expect(tcs[0].toolLocalName).toBe("search_code");
+    expect(tcs[0]!.mcpServer).toBe("github");
+    expect(tcs[0]!.toolLocalName).toBe("search_code");
   });
 
   it("sets mcpServer to null for non-MCP tools", async () => {
     const r = await reader.read("any.jsonl", mockReader([ASST_TOOLS]));
-    const bash = r.session.turns[0].toolCalls[1];
+    const bash = r.session.turns[0]!.toolCalls[1]!;
     expect(bash.mcpServer).toBeNull();
     expect(bash.toolLocalName).toBe("Bash");
   });
@@ -176,7 +176,7 @@ describe("ClaudeCodeReader", () => {
   it("ignores thinking content blocks (not tool calls)", async () => {
     const r = await reader.read("any.jsonl", mockReader([ASST_TOOLS]));
     // thinking block must not appear as a tool call
-    expect(r.session.turns[0].toolCalls.every((tc) => tc.toolName !== "thinking")).toBe(true);
+    expect(r.session.turns[0]!.toolCalls.every((tc) => tc.toolName !== "thinking")).toBe(true);
   });
 
   it("reads costUsd from cost-state line", async () => {
@@ -291,7 +291,7 @@ describe("ClaudeCodeReader — dedup and sidechain", () => {
     });
     const r = await reader.read("any.jsonl", mockReader([sidechain, main]));
     expect(r.session.turns).toHaveLength(1);
-    expect(r.session.turns[0].id).toBe("main-turn");
+    expect(r.session.turns[0]!.id).toBe("main-turn");
     expect(r.session.usage.inputTokens).toBe(50); // sidechain tokens not counted
     expect(r.skippedLines).toBe(1);
   });
