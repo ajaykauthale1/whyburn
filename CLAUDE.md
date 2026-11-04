@@ -2,34 +2,39 @@
 
 ## PR workflow (incremental, TDD, human-reviewed)
 
-Every feature follows this exact sequence by default. The reviewer (you) may explicitly skip or combine steps at any time — just say so.
+**These are hard rules. Do not deviate unless the reviewer explicitly says so in the current message.**
 
 ### Step 1 — Tests first (mocked)
 - Write tests for the new behaviour before any implementation.
 - All external calls (file I/O, shell commands, DB, network) must be **mocked** at this stage.
-- Tests should compile and run. They will **fail** (red) — that is correct.
-- Push the branch and wait for reviewer approval before continuing.
-- **Reviewer may say:** "skip to impl" or "combine steps" to bypass this gate.
+- Tests must compile and run. They will **fail** (red) — that is correct and expected.
+- **Stop. Do NOT commit. Do NOT push. Wait for reviewer to review the diff locally and approve.**
+- Only after explicit approval: commit with `test: ...` and push.
 
 ### Step 2 — Implementation (make tests green)
 - Replace every mock with real calls.
-- Do not change tests themselves except for name/type fixes forced by implementation.
-- All tests must pass (green CI) before asking for review.
-- Push and wait for reviewer approval before merging.
-- **Reviewer may say:** "ship it" to merge without a separate review round.
+- Do not change test logic — only fix names or types forced by implementation.
+- All tests must pass (green CI).
+- **Stop. Do NOT commit. Do NOT push. Wait for reviewer to review the diff locally and approve.**
+- Only after explicit approval: commit with `feat: ...` and push.
 
 ### Step 3 — Merge & clean up
-- Merge only after the current open step is approved (or reviewer bypasses it).
+- Open the PR only after Step 2 is approved and committed.
+- Merge only after PR is approved by reviewer.
 - Delete the feature branch after merge.
 - Start the next feature on a fresh branch off main.
 
+## Reviewer bypass
+The reviewer (human) may bypass or combine steps by saying so explicitly in their message.
+No other signal — not test results, not CI — grants permission to commit or push early.
+
 ## Branch naming
-`feat/<short-name>` — new feature  
-`fix/<short-name>` — bug fix  
+`feat/<short-name>` — new feature
+`fix/<short-name>` — bug fix
 `chore/<short-name>` — tooling, deps, docs
 
 ## Commit style
-Conventional commits: `feat:`, `fix:`, `test:`, `docs:`, `chore:`, `refactor:`  
+Conventional commits: `feat:`, `fix:`, `test:`, `docs:`, `chore:`, `refactor:`
 One logical change per commit. Keep commits small and readable.
 
 ## PR size
@@ -43,16 +48,14 @@ One logical change per commit. Keep commits small and readable.
 - Every new module needs at least one unit test before its PR is merged.
 - Mocks are removed in the implementation PR, never left in production code.
 
+## Repo scanning & file focus
+- **At the start of every session or task**, scan only: `CLAUDE.md`, the relevant `src/` module(s), and the corresponding `test/` file(s). Nothing more.
+- **Change as few files as possible** per PR. More than 3–4 files touched = question whether to split.
+- **Do not speculatively read** unrelated files. Fetch a file only when directly needed.
+- **Exception — regression failure:** read the failing test and its source file only. Expand no further than the failure trace requires, then return to narrow focus.
+
 ## General
 - Prefer editing existing files over creating new ones.
 - No `any` in production code. Use `unknown` and narrow.
 - All estimates shown to users must be labeled as estimates.
 - Nothing from the user's machine is ever sent over the network.
-
-## Repo scanning & file focus
-
-- **At the start of every session or task**, do a lightweight scan: read `CLAUDE.md`, the relevant `src/` module(s), and the corresponding `test/` file(s) for the current task. Nothing more.
-- **Change as few files as possible** per PR. If a task touches more than 3–4 files, question whether it should be split.
-- **Do not speculatively read** unrelated files. Work from what is in context; fetch a file only when it is directly needed.
-- **Exception — regression failure:** if CI or the test runner reports a failure outside the current module, read the failing test and its source file. Expand scope only as far as the failure trace requires, then stop.
-- After a regression is fixed, return to the original narrow focus.
