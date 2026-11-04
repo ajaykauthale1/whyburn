@@ -41,7 +41,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "check": "npm run lint && npm run typecheck && npm test && npm run build",
-    "prepublishOnly": "npm run check"
+    "prepublishOnly": "npm run check",
+    "prepare": "husky"
   },
   "dependencies": {
     "commander": "^15.0.0"
@@ -49,6 +50,7 @@
   "devDependencies": {
     "@biomejs/biome": "^2.6.4",
     "@types/node": "^22.20.5",
+    "husky": "^9.1.7",
     "tsup": "^9.0.0",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",

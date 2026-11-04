@@ -1,9 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { ClaudeCodeReader } from "../../src/ingest/claudeCodeReader.js";
 import type { LineReader } from "../../src/core/reader.js";
+import { ClaudeCodeReader } from "../../src/ingest/claudeCodeReader.js";
 
 function mockReader(lines: string[]): LineReader {
-  return { async *readLines(_path: string) { for (const l of lines) yield l; } };
+  return {
+    async *readLines(_path: string) {
+      for (const l of lines) yield l;
+    },
+  };
 }
 
 const reader = new ClaudeCodeReader();
@@ -11,42 +15,67 @@ const reader = new ClaudeCodeReader();
 // ── Shared fixtures ────────────────────────────────────────────────────────
 
 const USER_LINE = JSON.stringify({
-  type: "user", uuid: "user-001", timestamp: "2026-11-01T10:00:00.000Z",
+  type: "user",
+  uuid: "user-001",
+  timestamp: "2026-11-01T10:00:00.000Z",
   message: { role: "user", content: "hello" },
-  cwd: "D:\\workspaces\\myproject", sessionId: "sess-abc123", version: "2.1.0",
+  cwd: "D:\\workspaces\\myproject",
+  sessionId: "sess-abc123",
+  version: "2.1.0",
 });
 
 const ASST_TEXT = JSON.stringify({
-  type: "assistant", uuid: "asst-001", timestamp: "2026-11-01T10:00:05.000Z",
+  type: "assistant",
+  uuid: "asst-001",
+  timestamp: "2026-11-01T10:00:05.000Z",
   message: {
-    id: "msg-001", model: "claude-sonnet-5-5",
+    id: "msg-001",
+    model: "claude-sonnet-5-5",
     content: [{ type: "text", text: "Sure." }],
-    usage: { input_tokens: 500, output_tokens: 120, cache_read_input_tokens: 200, cache_creation_input_tokens: 50 },
+    usage: {
+      input_tokens: 500,
+      output_tokens: 120,
+      cache_read_input_tokens: 200,
+      cache_creation_input_tokens: 50,
+    },
   },
   sessionId: "sess-abc123",
 });
 
 const SYS_DURATION = JSON.stringify({
-  type: "system", subtype: "turn_duration", durationMs: 4800,
-  uuid: "sys-001", timestamp: "2026-11-01T10:00:05.500Z", sessionId: "sess-abc123",
+  type: "system",
+  subtype: "turn_duration",
+  durationMs: 4800,
+  uuid: "sys-001",
+  timestamp: "2026-11-01T10:00:05.500Z",
+  sessionId: "sess-abc123",
 });
 
 const ASST_TOOLS = JSON.stringify({
-  type: "assistant", uuid: "asst-002", timestamp: "2026-11-01T10:00:12.000Z",
+  type: "assistant",
+  uuid: "asst-002",
+  timestamp: "2026-11-01T10:00:12.000Z",
   message: {
-    id: "msg-002", model: "claude-sonnet-5-5",
+    id: "msg-002",
+    model: "claude-sonnet-5-5",
     content: [
       { type: "thinking", thinking: "...", signature: "sig" },
       { type: "tool_use", id: "tc-001", name: "mcp__github__search_code", input: {} },
       { type: "tool_use", id: "tc-002", name: "Bash", input: {} },
     ],
-    usage: { input_tokens: 300, output_tokens: 80, cache_read_input_tokens: 900, cache_creation_input_tokens: 0 },
+    usage: {
+      input_tokens: 300,
+      output_tokens: 80,
+      cache_read_input_tokens: 900,
+      cache_creation_input_tokens: 0,
+    },
   },
   sessionId: "sess-abc123",
 });
 
 const COST_STATE = JSON.stringify({
-  type: "cost-state", sessionId: "sess-abc123",
+  type: "cost-state",
+  sessionId: "sess-abc123",
   totalCostUSD: 0.04812,
   modelUsage: { "claude-sonnet-5-5": { inputTokens: 800, outputTokens: 200 } },
 });
@@ -147,7 +176,7 @@ describe("ClaudeCodeReader", () => {
   it("ignores thinking content blocks (not tool calls)", async () => {
     const r = await reader.read("any.jsonl", mockReader([ASST_TOOLS]));
     // thinking block must not appear as a tool call
-    expect(r.session.turns[0].toolCalls.every(tc => tc.toolName !== "thinking")).toBe(true);
+    expect(r.session.turns[0].toolCalls.every((tc) => tc.toolName !== "thinking")).toBe(true);
   });
 
   it("reads costUsd from cost-state line", async () => {
@@ -168,7 +197,10 @@ describe("ClaudeCodeReader", () => {
   });
 
   it("skips lines with no type field", async () => {
-    const r = await reader.read("any.jsonl", mockReader([JSON.stringify({ sessionId: "x" }), ASST_TEXT]));
+    const r = await reader.read(
+      "any.jsonl",
+      mockReader([JSON.stringify({ sessionId: "x" }), ASST_TEXT]),
+    );
     expect(r.skippedLines).toBe(1);
   });
 
@@ -192,7 +224,12 @@ describe("ClaudeCodeReader", () => {
   });
 
   it("skips assistant lines missing a message id", async () => {
-    const noId = JSON.stringify({ type: "assistant", uuid: "x", message: { model: "claude-sonnet-5-5" }, sessionId: "sess-abc123" });
+    const noId = JSON.stringify({
+      type: "assistant",
+      uuid: "x",
+      message: { model: "claude-sonnet-5-5" },
+      sessionId: "sess-abc123",
+    });
     const r = await reader.read("any.jsonl", mockReader([noId]));
     expect(r.skippedLines).toBe(1);
     expect(r.session.turns).toHaveLength(0);

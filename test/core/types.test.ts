@@ -3,12 +3,12 @@ import {
   type Confidence,
   type Finding,
   type McpServerConfig,
+  parseMcpToolName,
   type Session,
   type ToolCall,
   type Turn,
-  type Usage,
-  parseMcpToolName,
   totalTokens,
+  type Usage,
   zeroUsage,
 } from "../../src/core/types.js";
 
@@ -26,7 +26,12 @@ describe("zeroUsage", () => {
 
 describe("totalTokens", () => {
   it("sums all four token fields", () => {
-    const u: Usage = { inputTokens: 100, outputTokens: 50, cacheReadTokens: 200, cacheWriteTokens: 25 };
+    const u: Usage = {
+      inputTokens: 100,
+      outputTokens: 50,
+      cacheReadTokens: 200,
+      cacheWriteTokens: 25,
+    };
     expect(totalTokens(u)).toBe(375);
   });
 

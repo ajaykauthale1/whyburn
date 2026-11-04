@@ -15,9 +15,9 @@
  * subagent transcripts live in separate files.
  */
 
-import type { Session, Turn, ToolCall, Usage } from "../core/types.js";
-import { parseMcpToolName, zeroUsage } from "../core/types.js";
 import type { LineReader, ReadResult, TranscriptReader } from "../core/reader.js";
+import type { Session, ToolCall, Turn, Usage } from "../core/types.js";
+import { parseMcpToolName, zeroUsage } from "../core/types.js";
 
 // ── Raw JSONL line shapes ──────────────────────────────────────────────────
 
@@ -140,7 +140,10 @@ export class ClaudeCodeReader implements TranscriptReader {
       }
 
       // Skip subagent lines — they belong to separate files
-      if (parsed.isSidechain) { skippedLines++; continue; }
+      if (parsed.isSidechain) {
+        skippedLines++;
+        continue;
+      }
 
       // sessionId is on nearly every line — grab it opportunistically
       if (parsed.sessionId && !sessionId) sessionId = parsed.sessionId;
@@ -156,10 +159,16 @@ export class ClaudeCodeReader implements TranscriptReader {
 
         case "assistant": {
           const msg = parsed.message;
-          if (!msg?.id) { skippedLines++; break; }
+          if (!msg?.id) {
+            skippedLines++;
+            break;
+          }
 
           // Dedupe: skip if we already processed this message.id
-          if (seenMessageIds.has(msg.id)) { skippedLines++; break; }
+          if (seenMessageIds.has(msg.id)) {
+            skippedLines++;
+            break;
+          }
           seenMessageIds.add(msg.id);
 
           const model = msg.model ?? "unknown";

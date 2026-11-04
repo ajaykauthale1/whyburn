@@ -1,5 +1,9 @@
 # whyburn — Claude coding rules
 
+## Commit attribution
+
+Do NOT add `Co-Authored-By` or `Claude-Session` lines to any commit message or PR description. No attribution footers of any kind.
+
 ## PR workflow (incremental, TDD, human-reviewed)
 
 **These are hard rules. Do not deviate unless the reviewer explicitly says so in the current message.**

@@ -72,7 +72,7 @@ describe("NodeLineReader + ClaudeCodeReader (integration)", () => {
   it("detects non-MCP tool call (Bash) in turn 2", async () => {
     const r = await reader.read(FIXTURE, lineReader);
     const turn2 = r.session.turns[1];
-    const bash = turn2.toolCalls.find(tc => tc.toolName === "Bash");
+    const bash = turn2.toolCalls.find((tc) => tc.toolName === "Bash");
     expect(bash?.mcpServer).toBeNull();
   });
 
