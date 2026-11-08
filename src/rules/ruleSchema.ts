@@ -27,8 +27,14 @@ export type ValidatedRule = z.infer<typeof RuleSchema>;
 /**
  * Validates a rule object. Returns the rule if valid.
  * Throws a TypeError with a descriptive message + help URL if invalid.
- * Stub — full error formatting implemented in Step 2.
  */
-export function validateRule(_rule: unknown): ValidatedRule {
-  throw new Error("validateRule: not implemented");
+export function validateRule(rule: unknown): ValidatedRule {
+  const result = RuleSchema.safeParse(rule);
+  if (result.success) return rule as ValidatedRule;
+
+  const issues = result.error.issues
+    .map((i) => `  - ${i.path.join(".") || "rule"}: ${i.message}`)
+    .join("\n");
+
+  throw new TypeError(`Invalid rule definition:\n${issues}\n\nSee: ${RULE_HELP_URL}`);
 }

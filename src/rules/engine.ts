@@ -24,14 +24,26 @@ export interface RuleEngineResult {
   errors: string[];
 }
 
-/** Stub — implementation comes in Step 2. */
 export class RuleEngine {
+  private readonly rules: Rule[];
+
   constructor(rules: Rule[]) {
-    // Validate every rule at construction — throws if any rule is malformed
     this.rules = rules.map((r) => validateRule(r) as Rule);
   }
 
-  run(_session: Session, _configs: McpServerConfig[]): RuleEngineResult {
-    throw new Error("RuleEngine.run: not implemented");
+  run(session: Session, configs: McpServerConfig[]): RuleEngineResult {
+    const findings: Finding[] = [];
+    const errors: string[] = [];
+
+    for (const rule of this.rules) {
+      try {
+        const result = rule.check(session, configs);
+        findings.push(...result);
+      } catch (e) {
+        errors.push(`Rule '${rule.id}' threw an error: ${String(e)}`);
+      }
+    }
+
+    return { findings, errors };
   }
 }
