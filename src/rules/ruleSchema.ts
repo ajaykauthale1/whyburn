@@ -12,11 +12,11 @@ export const RULE_HELP_URL = "https://github.com/ajaykauthale1/whyburn#writing-r
 
 export const RuleSchema = z.object({
   id: z
-    .string({ required_error: "Rule must have an 'id' string." })
+    .string()
     .min(1, "Rule 'id' must not be empty.")
     .regex(/^[a-z][a-z0-9-]*$/, "Rule 'id' must be kebab-case (e.g. 'unused-mcp-server')."),
   version: z
-    .string({ required_error: "Rule must have a 'version' string." })
+    .string()
     .min(1, "Rule 'version' must not be empty.")
     .regex(/^\d+\.\d+\.\d+$/, "Rule 'version' must be semver (e.g. '1.0.0')."),
   check: z.function(),
