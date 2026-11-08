@@ -1,0 +1,40 @@
+/**
+ * Zod schema for the Rule interface.
+ *
+ * The engine validates every rule against this schema at construction time.
+ * A rule that fails validation throws immediately with a human-readable message
+ * that names the bad field and points to the authoring guide.
+ */
+
+import { z } from "zod";
+
+export const RULE_HELP_URL = "https://github.com/ajaykauthale1/whyburn#writing-rules";
+
+export const RuleSchema = z.object({
+  id: z
+    .string()
+    .min(1, "Rule 'id' must not be empty.")
+    .regex(/^[a-z][a-z0-9-]*$/, "Rule 'id' must be kebab-case (e.g. 'unused-mcp-server')."),
+  version: z
+    .string()
+    .min(1, "Rule 'version' must not be empty.")
+    .regex(/^\d+\.\d+\.\d+$/, "Rule 'version' must be semver (e.g. '1.0.0')."),
+  check: z.function(),
+});
+
+export type ValidatedRule = z.infer<typeof RuleSchema>;
+
+/**
+ * Validates a rule object. Returns the rule if valid.
+ * Throws a TypeError with a descriptive message + help URL if invalid.
+ */
+export function validateRule(rule: unknown): ValidatedRule {
+  const result = RuleSchema.safeParse(rule);
+  if (result.success) return rule as ValidatedRule;
+
+  const issues = result.error.issues
+    .map((i) => `  - ${i.path.join(".") || "rule"}: ${i.message}`)
+    .join("\n");
+
+  throw new TypeError(`Invalid rule definition:\n${issues}\n\nSee: ${RULE_HELP_URL}`);
+}
