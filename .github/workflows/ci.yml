@@ -6,9 +6,29 @@ on:
   pull_request:
 
 jobs:
+  # Fast single-node check on every PR push — catches lint/type/test regressions quickly.
   check:
+    name: ubuntu · node 22
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm audit --audit-level=high
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - run: node dist/cli.js --version
+
+  # Full OS × Node matrix — runs only when merging to main (the expensive cross-platform gate).
+  matrix:
     name: ${{ matrix.os }} · node ${{ matrix.node }}
     runs-on: ${{ matrix.os }}
+    if: github.ref == 'refs/heads/main'
     strategy:
       fail-fast: false
       matrix:

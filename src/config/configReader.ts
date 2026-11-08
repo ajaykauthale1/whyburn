@@ -48,13 +48,50 @@ export interface ConfigReadResult {
   errors: string[];
 }
 
-// ── Stub — implementation comes in Step 2 ─────────────────────────────────
+// ── Raw config shapes ──────────────────────────────────────────────────────
+
+interface RawMcpConfig {
+  mcpServers?: Record<string, unknown>;
+}
+
+// ── Implementation ─────────────────────────────────────────────────────────
 
 export class DefaultConfigReader implements ConfigReader {
-  // fileReader will be used in Step 2 implementation
-  constructor(readonly _fileReader: FileReader) {}
+  constructor(private readonly fileReader: FileReader) {}
 
-  read(_options: ConfigReadOptions): Promise<ConfigReadResult> {
-    throw new Error("DefaultConfigReader.read: not implemented");
+  async read(options: ConfigReadOptions): Promise<ConfigReadResult> {
+    const servers: McpServerConfig[] = [];
+    const errors: string[] = [];
+
+    await this.#parseConfig(options.userConfigPath, null, servers, errors);
+
+    if (options.projectPath !== null) {
+      const dotMcp = `${options.projectPath}/.mcp.json`;
+      await this.#parseConfig(dotMcp, options.projectPath, servers, errors);
+    }
+
+    return { servers, errors };
+  }
+
+  async #parseConfig(
+    configPath: string,
+    projectPath: string | null,
+    out: McpServerConfig[],
+    errors: string[],
+  ): Promise<void> {
+    if (!(await this.fileReader.exists(configPath))) return;
+
+    let raw: RawMcpConfig;
+    try {
+      const text = await this.fileReader.readFile(configPath);
+      raw = JSON.parse(text) as RawMcpConfig;
+    } catch (e) {
+      errors.push(`Failed to parse ${configPath}: ${String(e)}`);
+      return;
+    }
+
+    for (const name of Object.keys(raw.mcpServers ?? {})) {
+      out.push({ name, configPath, projectPath });
+    }
   }
 }
