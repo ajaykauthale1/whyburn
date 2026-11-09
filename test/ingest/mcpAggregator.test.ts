@@ -65,9 +65,9 @@ describe("aggregateMcpUsage", () => {
     const session = makeSession("s1", [turn]);
     const result = aggregateMcpUsage([session]);
     expect(result).toHaveLength(1);
-    expect(result[0].server).toBe("github");
-    expect(result[0].totalCalls).toBe(1);
-    expect(result[0].sessionCount).toBe(1);
+    expect(result[0]!.server).toBe("github");
+    expect(result[0]!.totalCalls).toBe(1);
+    expect(result[0]!.sessionCount).toBe(1);
   });
 
   it("aggregates multiple calls to the same server in one session", () => {
@@ -78,8 +78,8 @@ describe("aggregateMcpUsage", () => {
     ]);
     const session = makeSession("s1", [turn]);
     const [row] = aggregateMcpUsage([session]);
-    expect(row.totalCalls).toBe(3);
-    expect(row.sessionCount).toBe(1);
+    expect(row!.totalCalls).toBe(3);
+    expect(row!.sessionCount).toBe(1);
   });
 
   it("counts distinct sessions for a server across multiple sessions", () => {
@@ -90,9 +90,9 @@ describe("aggregateMcpUsage", () => {
       makeTurn("t2", "s2", [makeToolCall("t2", "mcp__github__get_file")]),
     ]);
     const [row] = aggregateMcpUsage([s1, s2]);
-    expect(row.server).toBe("github");
-    expect(row.sessionCount).toBe(2);
-    expect(row.totalCalls).toBe(2);
+    expect(row!.server).toBe("github");
+    expect(row!.sessionCount).toBe(2);
+    expect(row!.totalCalls).toBe(2);
   });
 
   it("tracks distinct tools called per server", () => {
@@ -103,9 +103,9 @@ describe("aggregateMcpUsage", () => {
     ]);
     const session = makeSession("s1", [turn]);
     const [row] = aggregateMcpUsage([session]);
-    expect(row.tools).toContain("search_code");
-    expect(row.tools).toContain("get_file");
-    expect(row.tools).toHaveLength(2);
+    expect(row!.tools).toContain("search_code");
+    expect(row!.tools).toContain("get_file");
+    expect(row!.tools).toHaveLength(2);
   });
 
   it("handles multiple distinct MCP servers", () => {
@@ -128,10 +128,10 @@ describe("aggregateMcpUsage", () => {
     ]);
     const session = makeSession("s1", [turn]);
     const result = aggregateMcpUsage([session]);
-    expect(result[0].server).toBe("github");
-    expect(result[0].totalCalls).toBe(2);
-    expect(result[1].server).toBe("linear");
-    expect(result[1].totalCalls).toBe(1);
+    expect(result[0]!.server).toBe("github");
+    expect(result[0]!.totalCalls).toBe(2);
+    expect(result[1]!.server).toBe("linear");
+    expect(result[1]!.totalCalls).toBe(1);
   });
 
   it("handles server names containing underscores and hyphens", () => {
@@ -151,7 +151,7 @@ describe("aggregateMcpUsage", () => {
       makeTurn("t2", "s1", [makeToolCall("t2", "mcp__github__get_file")]),
     ]);
     const [row] = aggregateMcpUsage([s1]);
-    expect(row.sessionCount).toBe(1);
-    expect(row.totalCalls).toBe(2);
+    expect(row!.sessionCount).toBe(1);
+    expect(row!.totalCalls).toBe(2);
   });
 });

@@ -69,25 +69,25 @@ describe("discoverSessionFiles", () => {
     makeSession("-home-user-myproject", "sess-001");
     const results = await discoverSessionFiles(tmpDir);
     expect(results).toHaveLength(1);
-    expect(results[0].filePath).toMatch(/sess-001\.jsonl$/);
+    expect(results[0]!.filePath).toMatch(/sess-001\.jsonl$/);
   });
 
   it("sets sessionId from the filename (without extension)", async () => {
     makeSession("-home-user-myproject", "sess-abc123");
     const results = await discoverSessionFiles(tmpDir);
-    expect(results[0].sessionId).toBe("sess-abc123");
+    expect(results[0]!.sessionId).toBe("sess-abc123");
   });
 
   it("decodes projectPath from the folder name", async () => {
     makeSession("-home-user-myproject", "sess-001");
     const results = await discoverSessionFiles(tmpDir);
-    expect(results[0].projectPath).toBe("/home/user/myproject");
+    expect(results[0]!.projectPath).toBe("/home/user/myproject");
   });
 
   it("sets projectPath to null for undecodable folder names", async () => {
     makeSession("unknown-folder-123", "sess-001");
     const results = await discoverSessionFiles(tmpDir);
-    expect(results[0].projectPath).toBeNull();
+    expect(results[0]!.projectPath).toBeNull();
   });
 
   it("discovers files across multiple project folders", async () => {
@@ -117,7 +117,7 @@ describe("discoverSessionFiles", () => {
     makeSession("-home-user-proj", "sess-b");
     makeSession("-home-user-proj", "sess-a");
     const results = await discoverSessionFiles(tmpDir);
-    expect(results[0].sessionId).toBe("sess-a");
-    expect(results[1].sessionId).toBe("sess-b");
+    expect(results[0]!.sessionId).toBe("sess-a");
+    expect(results[1]!.sessionId).toBe("sess-b");
   });
 });
