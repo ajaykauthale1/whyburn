@@ -49,8 +49,9 @@ export function decodeFolderName(folder: string): string | null {
   // e.g. "D--workspaces-whyburn"  →  "D:\workspaces\whyburn"
   const windowsDrive = /^([A-Za-z])--(.*)$/.exec(folder);
   if (windowsDrive) {
-    const drive = windowsDrive[1]!.toUpperCase();
-    const rest = windowsDrive[2]!.replace(/-/g, "\\");
+    const [, driveLetter = "", encodedRest = ""] = windowsDrive;
+    const drive = driveLetter.toUpperCase();
+    const rest = encodedRest.replace(/-/g, "\\");
     return `${drive}:\\${rest}`;
   }
 
