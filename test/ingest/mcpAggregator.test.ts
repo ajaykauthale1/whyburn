@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { Session, ToolCall, Turn, Usage } from "../../src/core/types.js";
+import { parseMcpToolName, zeroUsage } from "../../src/core/types.js";
 import { aggregateMcpUsage } from "../../src/ingest/mcpAggregator.js";
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 function makeUsage(): Usage {
-  return { inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0 };
+  return zeroUsage();
 }
 
 function makeTurn(id: string, sessionId: string, toolCalls: ToolCall[]): Turn {
@@ -21,16 +22,15 @@ function makeTurn(id: string, sessionId: string, toolCalls: ToolCall[]): Turn {
 }
 
 function makeToolCall(turnId: string, toolName: string): ToolCall {
-  const isMcp = toolName.startsWith("mcp__");
-  let mcpServer: string | null = null;
-  let toolLocalName = toolName;
-  if (isMcp) {
-    const rest = toolName.slice("mcp__".length);
-    const sep = rest.indexOf("__");
-    mcpServer = rest.slice(0, sep);
-    toolLocalName = rest.slice(sep + 2);
-  }
-  return { id: `tc-${toolName}`, turnId, toolName, mcpServer, toolLocalName, success: true };
+  const parsed = parseMcpToolName(toolName);
+  return {
+    id: `tc-${toolName}`,
+    turnId,
+    toolName,
+    mcpServer: parsed?.mcpServer ?? null,
+    toolLocalName: parsed?.toolLocalName ?? toolName,
+    success: true,
+  };
 }
 
 function makeSession(id: string, turns: Turn[]): Session {

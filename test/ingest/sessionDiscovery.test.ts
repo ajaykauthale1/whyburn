@@ -25,7 +25,7 @@ describe("decodeFolderName", () => {
     expect(decodeFolderName("abc123-def456-ghi789")).toBe(null);
   });
 
-  it("returns the raw string when it cannot determine a path (no leading dash or drive letter)", () => {
+  it("returns null when it cannot determine a path (no leading dash or drive letter)", () => {
     expect(decodeFolderName("myproject")).toBe(null);
   });
 });

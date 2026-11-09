@@ -43,6 +43,12 @@ export function defaultProjectsDir(): string {
  *   - A name matching /^[A-Za-z]--/ is a Windows path: the first "-" is the
  *     colon after the drive letter, the second starts the first separator.
  *   - Anything else is not a recognisable project path → returns null.
+ *
+ * **Lossy:** Hyphens in directory names are indistinguishable from path
+ * separators after encoding, so "/home/user/my-app" produces the same folder
+ * name as "/home/user/my/app". This decoded value is best-effort only.
+ * When a `Session` object is available, prefer `Session.projectPath` (populated
+ * from the transcript's `cwd` field) as the authoritative project path.
  */
 export function decodeFolderName(folder: string): string | null {
   // Windows path: starts with a drive letter followed by "--"
@@ -74,47 +80,39 @@ export function decodeFolderName(folder: string): string | null {
  * Results are sorted by `filePath` for deterministic ordering.
  */
 export async function discoverSessionFiles(projectsDir: string): Promise<SessionFile[]> {
-  if (!fs.existsSync(projectsDir)) return [];
-
-  const results: SessionFile[] = [];
-
-  let projectFolders: string[];
+  let projectEntries: fs.Dirent[];
   try {
-    projectFolders = fs.readdirSync(projectsDir);
+    projectEntries = await fs.promises.readdir(projectsDir, { withFileTypes: true });
   } catch {
     return [];
   }
 
-  for (const folder of projectFolders) {
-    const folderPath = path.join(projectsDir, folder);
-    let stat: fs.Stats;
-    try {
-      stat = fs.statSync(folderPath);
-    } catch {
-      continue;
-    }
-    if (!stat.isDirectory()) continue;
+  const results: SessionFile[] = [];
 
-    const projectPath = decodeFolderName(folder);
+  for (const entry of projectEntries) {
+    if (!entry.isDirectory()) continue;
 
-    let files: string[];
+    const folderPath = path.join(projectsDir, entry.name);
+    const projectPath = decodeFolderName(entry.name);
+
+    let files: fs.Dirent[];
     try {
-      files = fs.readdirSync(folderPath);
+      files = await fs.promises.readdir(folderPath, { withFileTypes: true });
     } catch {
       continue;
     }
 
     for (const file of files) {
-      if (!file.endsWith(".jsonl")) continue;
-      const sessionId = file.slice(0, -".jsonl".length);
+      if (!file.isFile() || !file.name.endsWith(".jsonl")) continue;
+      const sessionId = file.name.slice(0, -".jsonl".length);
       results.push({
-        filePath: path.join(folderPath, file),
+        filePath: path.join(folderPath, file.name),
         projectPath,
         sessionId,
       });
     }
   }
 
-  results.sort((a, b) => a.filePath.localeCompare(b.filePath));
+  results.sort((a, b) => (a.filePath < b.filePath ? -1 : a.filePath > b.filePath ? 1 : 0));
   return results;
 }
